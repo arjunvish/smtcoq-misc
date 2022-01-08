@@ -1,0 +1,49 @@
+All subproofs start with the `(anchor :step x)` command and end with the `(step x ..`. There are two types of subproofs
+1. Subproofs that push into a context at the beginning and pop from the context at the end. Pushing onto the context 
+   occurs only via `:args` in the `anchor` command. The following command pushes `x |--> h` onto the context:
+   `(anchor :step x :args ((:= (x Int) h)))`.
+   Popping from the context occurs only via certain steps: `bind`, `sko_ex`, `sko_forall`, `onepoint`, `let`.
+2. Subproofs that introduce an assumption `h` and discharge the assumption using `g`, proving `h => g`. The `anchor`
+   is followed by `assume` command which is the premise of the subproof (`h`). The subproof ends with a `subproof` 
+   step that has `:discharge h` as an argument.
+
+
+Example of #1:
+(assume h1 (forall ((x Int)) (p x)))
+(assume h2 (not (p a)))
+
+;beginning of subproof
+(anchor :step t3 :args ((:= (x Int) h)))
+(step t3.t1 (cl (= x h)) :rule refl)
+(step t3.t2 (cl (= (p x) (p h))) :rule cong :premises (t3.t1))
+(step t3 (cl (= (forall ((x Int)) (p x)) (forall ((h Int)) (p h)))) :rule bind)
+;end of subproof
+
+(step t4 (cl (not (= (forall ((x Int)) (p x)) (forall ((h Int)) (p h)))) (not (forall ((x Int)) (p x))) (forall ((h Int)) (p h))) :rule equiv_pos2)
+(step t5 (cl (forall ((h Int)) (p h))) :rule th_resolution :premises (h1 t3 t4))(anchor :step t6 :args ((:= (h Int) j)))
+(step t6.t1 (cl (= h j)) :rule refl)
+(step t6.t2 (cl (= (p h) (p j))) :rule cong :premises (t6.t1))
+(step t6 (cl (= (forall ((h Int)) (p h)) (forall ((j Int)) (p j)))) :rule bind)(step t7 (cl (not (= (forall ((h Int)) (p h)) (forall ((j Int)) (p j)))) (not (forall ((h Int)) (p h))) (forall ((j Int)) (p j))) :rule equiv_pos2)
+(step t8 (cl (forall ((j Int)) (p j))) :rule th_resolution :premises (t5 t6 t7))(step t9 (cl (or (not (forall ((j Int)) (p j))) (forall ((j Int)) (p j)))) :rule qnt_cnf)
+(step t10 (cl (or (not (forall ((j Int)) (p j))) (p a))) :rule forall_inst :args ((:= j a)))
+(step t11 (cl (not (forall ((j Int)) (p j))) (p a)) :rule or :premises (t10))
+(step t12 (cl) :rule resolution :premises (t11 t8 h2))
+
+
+
+Example of #2:
+(anchor :step t53)
+(assume t53.h1 (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$)))))
+(step t53.t2 (cl (= (= zero$ zero$) true)) :rule eq_simplify)
+(step t53.t3 (cl (= (not (= zero$ zero$)) (not true))) :rule cong :premises (t53.t2))
+(step t53.t4 (cl (= (not true) false)) :rule not_simplify)
+(step t53.t5 (cl (= (not (= zero$ zero$)) false)) :rule trans :premises (t53.t3 t53.t4))
+(step t53.t6 (cl (= (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))) (and (member$ zero$ n$) false (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))))) :rule cong :premises (t53.t5))
+(step t53.t7 (cl (= (and (member$ zero$ n$) false (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))) false)) :rule and_simplify)
+(step t53.t8 (cl (= (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))) false)) :rule trans :premises (t53.t6 t53.t7))
+(step t53.t9 (cl (= (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$)))) (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) false))) :rule cong :premises (t53.t8))
+(step t53.t10 (cl (= (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) false) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$))))) :rule implies_simplify)
+(step t53.t11 (cl (= (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$)))) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$))))) :rule trans :premises (t53.t9 t53.t10))
+(step t53.t12 (cl (not (= (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$)))) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$))))) (not (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))))) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$)))) :rule equiv_pos2)
+(step t53.t13 (cl (not (= (insert$ a$ bot$) (production$ s$ n$ zero$)))) :rule th_resolution :premises (t53.h1 t53.t11 t53.t12))
+(step t53 (cl (not (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))))) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$)))) :rule subproof :discharge (h1))

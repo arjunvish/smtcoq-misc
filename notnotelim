@@ -1,0 +1,44 @@
+SMT File
+--------
+(set-logic UFLIA)
+(assert (not (or true false)))
+(check-sat)
+(exit)
+
+Current veriT Proof
+-------------------
+(assume h1 (not (or true false)))
+(step t2 (cl (= (or true false) (or true))) :rule or_simplify)
+(step t3 (cl (= (or true) true)) :rule or_simplify)
+(step t4 (cl (= (or true false) true)) :rule trans :premises (t2 t3))
+(step t5 (cl (= (not (or true false)) (not true))) :rule cong :premises (t4))
+(step t6 (cl (= (not true) false)) :rule not_simplify)
+(step t7 (cl (= (not (or true false)) false)) :rule trans :premises (t5 t6))
+(step t8 (cl (not (= (not (or true false)) false)) (not (not (or true false))) false) :rule equiv_pos2)
+(step t9 (cl (not (not (not (or true false)))) (or true false)) :rule not_not)
+(step t10 (cl (not (= (not (or true false)) false)) (or true false) false) :rule 
+    th_resolution :premises (t9 t8))
+(step t11 (cl false) :rule th_resolution :premises (h1 t7 t10))
+(step t12 (cl (not false)) :rule false)
+(step t13 (cl) :rule resolution :premises (t11 t12))
+
+Translation:
+------------
+Delete `t9`
+For each `res` that uses `t9`, if its a binary resolution, then identity 
+(* Alternatively: delete the resolution, t10, and replace t10 -> t8 from all steps after *)
+    else remove `t9` from premises.
+
+Assumption: not_not is always used in a th_resolution (t9 is followed by t10).
+We want to remove t9 and t10. The goal remains to derive the empty clause (cl) from t8. Modify t9-t13 as follows:
+(step t8 (cl (not (= (not (or true false)) false)) (not (not (or true false))) false) :rule equiv_pos2)
+(step t9 (cl false) :rule th_resolution h1 t7 t8)
+(step t10 (cl (not false)) :rule false)
+(step t11 (cl) :rule resolution t9 t10)
+
+Then, even with the double negation simplification, we have:
+(step t8 (cl (not (= (not (or true false)) false)) (or true false) false) :rule equiv_pos2)
+(step t9 (cl false) :rule th_resolution h1 t7 t8)
+(step t10 (cl (not false)) :rule false)
+(step t11 (cl) :rule resolution t9 t10)
+and equiv_pos2 wouldn't turn into x v ~x so we should be fine.

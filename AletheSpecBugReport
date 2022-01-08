@@ -1,0 +1,10 @@
+- The `<->` symbol is not introduced, but it seems to be equality over the Boolean sort. As such it can be subsumed by `\simeq` which is defined as the sorted equality predicate.
+- As a consequence of the above point, it seems like `eq_reflexive` and `refl` do the same thing, but `refl` works modulo substitions and this needs to be mentioned.
+- The `trans` rule (#20, Pg 18) is defined as having only 2 premises but in practice, veriT produces proofs involving more than 2 premises.
+- In the concrete syntax (Fig 2, Page 11), in the rule defining a `step` command, a `<step_annotation>` should be optional.
+- In all the congruence rules, does the order of premises in the rule imply an ordering on the arguments to the function/predicate?
+- The `_simplify` rules (like `not_simplify`) are supposed to apply the simplification rewrites as long as possible. VeriT doesn't apply them as long as possible.
+- The `ac_simp` rule is not clearly specified.
+- The ordering of resolutions for more than two premises is not clearly specified for `resolution` and `th_resolution` rules.
+- In `ite_simplify` rewrite #5 and #6 are same as #1 and #2.
+- `not_ite2` concludes `~\phi_2, ~\phi_2` while it should conclude `~\phi_1, ~\phi_2`.

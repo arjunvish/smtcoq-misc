@@ -1,0 +1,109 @@
+Files:
+- Main checker: src/Trace.v (https://github.com/smtcoq/smtcoq/blob/master/src/Trace.v) - 
+check the EUF checker module which is not the EUF theory checker, 
+but the main checker, named that way for historical purposes.
+- Small checkers: for each theory, there is a checker in its respective directory in src.
+
+Deep embedding: 
+Represent SMT formulas in Coq by defining them using Coq datatypes. 
+This is done by defining a formula type in Coq (src/SMT_Terms.v or 
+https://github.com/smtcoq/smtcoq/blob/master/src/SMT_terms.v), which also allows terms in 
+different theories.
+
+Shallow embedding: 
+Represent SMT formulas in Coq using their Coq counterparts. This is done by defining 
+Formulas as Bools. I don't think we need a specification for this since Coq already does it. 
+For each theory, the respective shallow embedding is in the theories directory. 
+For example, src/bva/BVList.v.
+
+Additionally, everything needs to be reified to the OCaml level. This is done in 
+src/trace/smtCertif.ml (https://github.com/smtcoq/smtcoq/blob/master/src/trace/smtCertif.ml). 
+The OCaml deep embedding is in 
+src/trace/smtAtom.ml (https://github.com/smtcoq/smtcoq/blob/master/src/trace/satAtom.ml) 
+and src/trace/smtForm.ml (https://github.com/smtcoq/smtcoq/blob/master/src/trace/smtForm.ml).
+
+Also the LFSC parser needs to be changed. The LFSC parser only parses the LFSC language and 
+then translates into an SMTCoq certificate via a tree which also considers the signature 
+rules to be part of the language (src/lfsc).
+To add bvashr to SMTCoq:
+1. Add it without bugs to SMTCoq:
+- Add a step corresponding to the op to the main checker 
+src/Trace.v (https://github.com/smtcoq/smtcoq/blob/master/src/Trace.v).
+- Extend the main checker with the case for the op and then call the small checker 
+with the right step src/Trace.v (https://github.com/smtcoq/smtcoq/blob/master/src/Trace.v).
+- Extend the small checker /src/bva/Bva_checker.v 
+(https://github.com/smtcoq/smtcoq/blob/master/src/bva/Bva_checker.v) by adding 
+the LFSC bit-blasting rule to it.
+2. Make it usable from SMTCoq.
+- Extend the LFSC parser to have the rules at /src/lfsc/ 
+(https://github.com/smtcoq/smtcoq/tree/master/src/lfsc).
+- Add the lemmas corresponding to the bvashr rewrite rules to BVList.v 
+(https://github.com/smtcoq/smtcoq/blob/master/src/bva/BVList.v).
+  * An interesting thing to do here would be to not add the rewrite rules and 
+  try to prove stuff over bvashr using SMTCoq to see if Coq gives the rewrite rules as subgoals. 
+
+
+Questions:
+
+- In SMT_terms.v, the interpretation of a BV atom is defined as:
+```
+Variable interp_bvatom : atom -> forall s, BITVECTOR_LIST.bitvector s.
+```
+What does the universally quantified formula indicate? `bitvector` takes 
+an `N` that represents the length of the BV so what does this mean?
+
+- Thesis defines a `step` to be one of `Res`, `Cnf`, `Spl`, one for a 
+particular theory, and `step_checker` calls small checkers on steps; one 
+main checker handles all of this.
+However, from Trace.v and the developer documentation, there seems to be 
+one main checker each for resolution, CNF conversion, and all theories. 
+Then there are `step`s and `step_checker`s for each of these that have a 
+much more fine-grained set of constructors. 
+
+- It seems that `or_aux` is necessary because without it, Coq is not convinced that the arguments 
+to `or` are decreasing in each case. 
+For instance, if I defined `or2` as:
+```
+Fixpoint or2 (c1 c2:t) {struct c1} : t :=
+    match c1, c2 with
+    | nil, _ => c2
+    | _, nil => c1
+    | h1::t1, h2::t2 =>
+      match compare h1 h2 with
+      | Eq => h1 :: or2 t1 t2
+      | Lt => h1 :: or2 t1 c2
+      | Gt => h2 :: or2 c1 t2
+      end
+    end.
+```
+Coq complains:
+```
+Recursive definition of or2 is ill-formed.
+Recursive call to or2 has principal argument equal to 
+"c1" instead of "t1".
+```
+It seems like even though in the `Gt` case of pattern matching, one of the arguments to the 
+recursive call to `or2` is smaller, it wants the first one to be smaller. Am I right about this?
+
+- resolve [] [x;y;z] = [0] (true) for any x, y, z. Why?
+
+- resolve doesn't take a pivot element.
+
+- resolve goes through the elements index-wise and if it finds a complimentary pair of literals, it 
+resolves the clauses over those literals, otherwise it just returns [0].
+resolve [5;2] [4;2] = [2]
+resolve [5;2] [2;4] = [2;2]
+resolve [5;2] [7;4] = [5;2;0] What's happening here?
+
+- What does `only parsing` do in Coq?
+
+- How does LFSC do resolution?
+
+- How is resolution done in general?
+
+- Look up array in Coq.
+
+- set_weaken https://github.com/arjunvish/smtcoq/blob/master/src/State.v#L719 
+takes `cl` which is a weakening of `s.[cid]` and replaces `s.[pos]` with where `cid` and `pos` 
+could be any indices right? 
+`valid_set_weaken` says that we don't lose validity no matter what `pos` and `cid` are?

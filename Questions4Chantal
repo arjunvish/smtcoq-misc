@@ -1,0 +1,10 @@
+- The makefile builds the entire project every time instead of just rebuilding the VeriT stuff.
+- When there is a double negation in the proof format, can I expect it to always be an Fnot2 in SMTCoq, and not a double application of the negation instead (would this just make it possitive)?
+- In the new format, most of the rules that previously had arguments have 0 arguments. For example,
+```
+and_pos           : valid: {(not (and a_1 ... a_n)) a_i}
+```
+had an integer argument specifying the `a_i` to project in the old format, but now it has no arguments. I made the change on the OCaml side without touching the Coq code/proofs, and hard coded the index of the projection as is done for `Impn1` rule (https://github.com/smtcoq/smtcoq/blob/master/src/verit/veritSyntax.ml#L275). Is this okay?
+- How are subproofs handled? Can I replace ids to int lists?
+- Some rules pass premises plus result, and SMTCoq checks that the rule is correctly applied, while for some rules, only the premises are passed and the result is constructed. Is there a guide for how to choose between the two approaches?
+- For resolution, the result is constructed. It seems like this assumes that the resulting clause isn't implicitly reordered. Did this assumption not lead to bugs? The current VeriT proof producer does implicitly reorder literals, which causes some tests to fail. A change would involve passing the result of the resolution along with the premises and then "checking" the result as opposed to "constructing" it. What do you think of this change? Seems like a significant one.

@@ -1,0 +1,75 @@
+a = #b0111
+b = #b0010
+s = 0 
+prev_res = 0111
+s =1
+prev_res = 1110
+
+
+
+a = #b00001111 (15)
+b = #b00000101 (5)
+s = 0,1,2
+
+s = 0
+threshold = 1
+00011110
+
+s = 1
+threshold = 2
+00011110
+
+s = 2
+threshold = 4
+11100000
+
+Left Shift
+==========
+In a << b where len(a) = size,
+if b < size,
+	For each s in (0 to log2(size)-1), 
+		If b[s] is set, then 
+			perform 2^s left shifts
+else
+	[00..0] of length size
+\\Only check s in [0,log2(size)) since if a bit > log2(size) is set, it will shift everything out. Ex: for bv8, if 4th bit is set, that bv is > 8 (log8 = 3)
+
+
+
+a = #b11110000
+b = #b00000101 (5)
+s = 0,1,2
+
+s = 0
+threshold = 1
+01111000
+
+s = 1
+threshold = 2
+01111000
+
+s = 2
+threshold = 3
+00000111
+
+Right Shift
+===========
+In a >> b, where len(a) = size,
+if b < size,
+	For each s in (0 to log2(size)-1),
+		 If b[s] is set, then
+		 	perform 2^s right shifts
+else
+	[00..0] of length size
+\\Only check s in [0,log2(size)) since if a bit > log2(size) is set, it will shift everything out. Ex: for bv8, if 4th bit is set, that bv is > 8 (log8 = 3)
+
+Arithmetic Right Shift (Same as logical right shift, but sign bits are shifted in)
+==================================================================================
+In a >>_a b, where len(a) = size and MSB(a) = sign,
+if b < size,
+	For each s in (0 to log2(size)-1),
+		 If b[s] is set, then
+		 	perform 2^s arithmetic right shifts (shifting in the sign bit)
+else
+	[sign sign...sign] of length size
+\\Only check s in [0,log2(size)) since if a bit > log2(size) is set, it will shift everything out. Ex: for bv8, if 4th bit is set, that bv is > 8 (log8 = 3)
