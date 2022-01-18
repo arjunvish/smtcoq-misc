@@ -41,18 +41,21 @@ New Proof Format
 ----------------
 (assume h1 (forall ((x Int)) (p x)))
 (assume h2 (not (p a)))
+
 (anchor :step t3 :args ((:= (x Int) h)))
 (step t3.t1 (cl (= x h)) :rule refl)
 (step t3.t2 (cl (= (p x) (p h))) :rule cong :premises (t3.t1))
 (step t3 (cl (= (forall ((x Int)) (p x)) (forall ((h Int)) (p h)))) :rule bind)
 (step t4 (cl (not (= (forall ((x Int)) (p x)) (forall ((h Int)) (p h)))) (not (forall ((x Int)) (p x))) (forall ((h Int)) (p h))) :rule equiv_pos2)
 (step t5 (cl (forall ((h Int)) (p h))) :rule th_resolution :premises (h1 t3 t4))
+
 (anchor :step t6 :args ((:= (h Int) j)))
 (step t6.t1 (cl (= h j)) :rule refl)
 (step t6.t2 (cl (= (p h) (p j))) :rule cong :premises (t6.t1))
 (step t6 (cl (= (forall ((h Int)) (p h)) (forall ((j Int)) (p j)))) :rule bind)
 (step t7 (cl (not (= (forall ((h Int)) (p h)) (forall ((j Int)) (p j)))) (not (forall ((h Int)) (p h))) (forall ((j Int)) (p j))) :rule equiv_pos2)
 (step t8 (cl (forall ((j Int)) (p j))) :rule th_resolution :premises (t5 t6 t7))
+
 (step t9 (cl (or (not (forall ((j Int)) (p j))) (forall ((j Int)) (p j)))) :rule qnt_cnf)
 (step t10 (cl (or (not (forall ((j Int)) (p j))) (p a))) :rule forall_inst :args ((:= j a)))
 (step t11 (cl (not (forall ((j Int)) (p j))) (p a)) :rule or :premises (t10))
