@@ -47,3 +47,11 @@ Example of #2:
 (step t53.t12 (cl (not (= (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$)))) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$))))) (not (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))))) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$)))) :rule equiv_pos2)
 (step t53.t13 (cl (not (= (insert$ a$ bot$) (production$ s$ n$ zero$)))) :rule th_resolution :premises (t53.h1 t53.t11 t53.t12))
 (step t53 (cl (not (=> (= (insert$ a$ bot$) (production$ s$ n$ zero$)) (and (member$ zero$ n$) (not (= zero$ zero$)) (= (pos$ a$) (max$a (set_mset$ zero$))) (not (true_cls$ (interp$ s$ n$ zero$) zero$)) (= zero$ (fun_app$ s$ zero$))))) (not (= (insert$ a$ bot$) (production$ s$ n$ zero$)))) :rule subproof :discharge (h1))
+
+(assume h1 (and x y))
+(assume h2 (not x))
+(anchor :step t3)
+(assume t3.h1 (cl (and x y)))
+(step t3.t1 (cl x) :rule and :premises (t.h1))
+(step t3 (cl (not (and x y)) x) :rule subproof :discharge (h1))
+(step t4 (cl) :rule resolution :premises (t3 h1 h2))

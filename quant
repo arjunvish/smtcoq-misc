@@ -109,6 +109,35 @@ New Proof Format with Sharing
 (step t11 (cl @p_9 @p_10) :rule or :premises (t10))
 (step t12 (cl) :rule resolution :premises (t11 t8 h2))
 
+New Proof Format with Sharing Solution
+--------------------------------------
+(assume h1 (! (forall ((x Int)) (! (p x) :named @p_2)) :named @p_1))
+(assume h2 (not (! (p a) :named @p_10)))
+
+(anchor :step t3 :args ((:= (x Int) h)))
+(step t3.t1 (cl (= x h)) :rule refl)
+(step t3.t2 (cl (= @p_2 (! (p h) :named @p_3))) :rule cong :premises (t3.t1))
+(step t3 (cl (! (= @p_1 (! (forall ((h Int)) @p_3) :named @p_5)) :named @p_4)) :rule bind)
+(step t4 (cl (not @p_4) (not @p_1) @p_5) :rule equiv_pos2)
+(step t5 (cl @p_5) :rule th_resolution :premises (h1 t3 t4))
+    add_ref @p_5 t5; 
+    mk_clause(t5, bind, [], [h1]) ===> Same h1
+(anchor :step t6 :args ((:= (h Int) j)))
+(step t6.t1 (cl (= h j)) :rule refl)
+(step t6.t2 (cl (= @p_3 (! (p j) :named @p_6))) :rule cong :premises (t6.t1))
+(step t6 (cl (! (= @p_5 (! (forall ((j Int)) @p_6) :named @p_8)) :named @p_7)) :rule bind)
+(step t7 (cl (not @p_7) (not @p_5) @p_8) :rule equiv_pos2)
+(step t8 (cl @p_8) :rule th_resolution :premises (t5 t6 t7))
+    add_ref @p_8 t8
+    mk_clause(t8, bind, [], [t5]) ===> Same (Same h1)
+(step t9 (cl (or (! (not @p_8) :named @p_9) @p_8)) :rule qnt_cnf)
+    add_ref @p_9 (get_ref @p_8 (*t8*))
+    mk_clause(t9, qnt_cnf, [], [t8]) ===> Same (Same (Same h1))
+(step t10 (cl (or @p_9 @p_10)) :rule forall_inst :args ((:= j a)))
+    mk_clause(t10, fins, @p_10, [get_ref @p_9])
+(step t11 (cl @p_9 @p_10) :rule or :premises (t10))
+(step t12 (cl) :rule resolution :premises (t11 t8 h2))
+
 
 Quantified hypotheses are shallowly embedded as Props, but have no deep embedding. Proofs containing universally quantified formualas 
 are used by SMTCoq only when the formulas are fully instantiated in the proof. Thus, SMTCoq only supports the `forall_inst` rule which 
@@ -153,38 +182,3 @@ get_ref (forall @vr1, p @vr1)       Fins (Root (forall x. p x, p a))            
                                 --> Res (Fins (Root (forall x. p x, p a)))  Root (~(p a))
                                 --> Res (Root p a)  Root (~(p a))
                                 --> ()
-
-
-New Proof Format
-----------------
-(assume h1 (forall ((x Int)) (p x)))
-(assume h2 (not (p a)))
-
-;TODO 1: parse anchor as beginning of subproof, save end of subproof, allow arguments to add to context
-(anchor :step t3 :args ((:= (x Int) h)))
-;TODO 2: add refl, it allow it to check substitutions induced by the context
-(step t3.t1 (cl (= x h)) :rule refl)
-(step t3.t2 (cl (= (p x) (p h))) :rule cong :premises (t3.t1))
-;TODO 3: implement as a no-op, and also as the end of the sub-proof
-(step t3 (cl (= (forall ((x Int)) (p x)) (forall ((h Int)) (p h)))) :rule bind)
-(step t4 (cl (not (= (forall ((x Int)) (p x)) (forall ((h Int)) (p h)))) 
-    (not (forall ((x Int)) (p x))) (forall ((h Int)) (p h))) :rule equiv_pos2)
-
-;TODO 4: if premises to reso contain bind and equiv_pos2, remove both premises
-(step t5 (cl (forall ((h Int)) (p h))) :rule th_resolution :premises (h1 t3 t4))
-
-(anchor :step t6 :args ((:= (h Int) j)))
-(step t6.t1 (cl (= h j)) :rule refl)
-(step t6.t2 (cl (= (p h) (p j))) :rule cong :premises (t6.t1))
-(step t6 (cl (= (forall ((h Int)) (p h)) (forall ((j Int)) (p j)))) :rule bind)
-(step t7 (cl (not (= (forall ((h Int)) (p h)) (forall ((j Int)) (p j)))) 
-    (not (forall ((h Int)) (p h))) (forall ((j Int)) (p j))) :rule equiv_pos2)
-(step t8 (cl (forall ((j Int)) (p j))) :rule th_resolution :premises (t5 t6 t7))
-
-;TODO 5: implement as a no-op
-(step t9 (cl (or (not (forall ((j Int)) (p j))) (forall ((j Int)) (p j)))) :rule qnt_cnf)
-(step t10 (cl (or (not (forall ((j Int)) (p j))) (p a))) :rule forall_inst :args ((:= j a)))
-(step t11 (cl (not (forall ((j Int)) (p j))) (p a)) :rule or :premises (t10))
-(step t12 (cl) :rule resolution :premises (t11 t8 h2))
-
-;How are subproofs currently handled?
