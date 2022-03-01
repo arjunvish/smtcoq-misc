@@ -182,3 +182,28 @@ get_ref (forall @vr1, p @vr1)       Fins (Root (forall x. p x, p a))            
                                 --> Res (Fins (Root (forall x. p x, p a)))  Root (~(p a))
                                 --> Res (Root p a)  Root (~(p a))
                                 --> ()
+
+
+CVC5 proof:
+(assume a0 (forall ((x Int)) (p x)))
+(assume a1 (not (p a)))
+
+(step t1 (cl (=> (forall ((x Int)) (p x)) (p a)) (forall ((x Int)) (p x))) :rule implies_neg1)
+
+(anchor :step t2)
+(assume t2.a0 (forall ((x Int)) (p x)))
+(step t2.t1 (cl (or (not (forall ((x Int)) (p x))) (p a))) :rule forall_inst :args ((:= x a)))
+(step t2.t2 (cl (not (forall ((x Int)) (p x))) (p a)) :rule or :premises (t2.t1))
+(step t2.t3 (cl (p a)) :rule resolution :premises (t2.t2 t2.a0))
+(step t2 (cl (not (forall ((x Int)) (p x))) (p a)) :rule subproof :discharge (t2.a0))
+;This block is literally `forall_inst`, followed by `or`
+
+(step t3 (cl (=> (forall ((x Int)) (p x)) (p a)) (p a)) :rule resolution :premises (t1 t2))
+(step t4 (cl (=> (forall ((x Int)) (p x)) (p a)) (not (p a))) :rule implies_neg2)
+(step t5 (cl (=> (forall ((x Int)) (p x)) (p a)) (=> (forall ((x Int)) (p x)) (p a))) :rule resolution :premises (t3 t4))
+(step t6 (cl (=> (forall ((x Int)) (p x)) (p a))) :rule contraction :premises (t5))
+(step t7 (cl (not (forall ((x Int)) (p x))) (p a)) :rule implies :premises (t6))
+;we already had this at t2
+
+(step t8 (cl (p a) (not (forall ((x Int)) (p x)))) :rule reordering :premises (t7))
+(step t9 (cl) :rule resolution :premises (t8 a1 a0))
