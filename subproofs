@@ -55,3 +55,49 @@ Example of #2:
 (step t3.t1 (cl x) :rule and :premises (t.h1))
 (step t3 (cl (not (and x y)) x) :rule subproof :discharge (h1))
 (step t4 (cl) :rule resolution :premises (t3 h1 h2))
+
+Flattening solution:
+Proof with sub-proof #2:
+...
+
+C
+-------
+|  H  |
+| ... |
+|  G  |
+|-----|
+~H v G
+...
+Res (~H v G) H
+--------------
+     G
+...
+Res G ~G
+--------
+   []
+
+
+Flattened proof:
+...
+C
+-----------------not_and (ImmBuildDef)
+(H ^ ~G) v ~H v G
+...
+Res ((H ^ ~G) v ~H v G) H
+-------------------------
+(H ^ ~G) v G
+...
+Res ((H ^ ~G) v G) ~G
+---------------------
+H ^ ~G
+----and (H ^ ~G) (ImmBuildProj 1)
+~G
+--and (H ^ ~G) (ImmBuildProj 2)
+H
+-------
+| ... |
+|  G  |
+-------
+Res G ~ G
+---------
+   []
