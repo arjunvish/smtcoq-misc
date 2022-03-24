@@ -107,8 +107,7 @@ Hand-crafted example:
 Flattened version:
 (assume h1 (and x y))
 (assume h2 (not x))
-(step t3 (cl (or (and (and x y) (not x)) (not (and x y)) x)) :rule and_neg)
-(step x1 (cl (and (and x y) (not x)) (not (and x y)) x) :rule or :premises (t3))
+(step t3 (cl (and (and x y) (not x)) (not (and x y)) x) :rule and_neg)
 (step t4 (cl (and (and x y) (not x))) :rule resolution :premises (t3 h1 h2))
 (step x2 (cl (and x y)) :rule and :premises (t4))
 (step t3.t1 (cl x) :rule and :premises (x2))
